@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#Written by AsaurusRex, DO NOT use this project for purposes other than legitimate red teaming/pentesting jobs, or research.  DO NOT use this for illegal activity of any kind, and know that this project is intended for research purposes and to help advance the missions of both red and blue teams.
 import sys
 import secrets 
 import argparse
