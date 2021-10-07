@@ -1,3 +1,6 @@
+#Written by AsaurusRex, DO NOT use this project for purposes other than legitimate red teaming/pentesting jobs, or research.  DO NOT use this for illegal activity of any kind, and know that this project is intended for research purposes and to help advance the missions of both red and blue teams.
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
