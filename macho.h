@@ -1,3 +1,5 @@
+//Based on Maisal Loader
+
 #ifndef _MACHO_H_
 #define _MACHO_H_
 
