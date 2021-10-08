@@ -227,7 +227,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate stego for implants.")
     parser.add_argument('-innocent_path', action='store', dest="path", default="", help="Provide the full path to the innocent file to be used.")
     parser.add_argument('-o', action='store', dest="output", default="stego_file", help="Provide the path where you want your stego file to be placed.")
-    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 50 bytes.")
+    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 150 bytes.")
     #parser.add_argument('-compile_file', action='store', dest="compile_file", default="compile_forblaze.m", help="Provide the path to the C++ file you want to edit.")
     parser.add_argument('-url_to_encrypt', action='store', dest="url", default="", help="Provide the URL you want to stick inside the compile file.")
     parser.add_argument('-supply_key', action='store', dest="supplied_key", default="", help="If you wish to use a specific key, provide it here. It must be in the format: -supply_key \"\\\\x6e\\\\x60\\\\x...\" - aka two double slashes are needed between each byte, or else it WILL NOT WORK.")
