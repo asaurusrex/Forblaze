@@ -35,7 +35,10 @@ def gen_key(length_of_key):
 
     
     #print("Successfully generated key: ", hex_key, "\n", key)
-
+    
+    #write key to disk
+    with open('forblaze_key', 'wb') as f:
+            f.write(key)
     
     return key, hex_key
 
@@ -142,20 +145,20 @@ def assemble_m_file(compile_file, hex_key, stego_location, key_url):
 
             if compile_file == "compile_forblaze_method3.m":
                 if "key here:" in lines[x]:  
-                    lines[x+1] = "NSString *stringURL = [NSString stringWithFormat:@\"{}\"];".format(key_url)
+                    lines[x+1] = "NSString *stringURL = [NSString stringWithFormat:@\"{}\"];\n".format(key_url)
             
             if "stego file location:" in lines[x]:
                 lines[x+1] = "NSString *file = [NSString stringWithFormat:@\"{}\"];\n".format(stego_location)
 
                 #can change the header offset bytes here
             if "place header offset bytes here:" in lines[x]:
-                lines[x+2] = "unsigned char header1[1] = { 0x89 };\n" 
-                lines[x+3] = "unsigned char header2[1] = { 0x12 };\n"
+                lines[x+2] = "unsigned char header1[1] = { 0x59 };\n" 
+                lines[x+3] = "unsigned char header2[1] = { 0x4e };\n"
 
                 #can change trailing offset bytes here
             if "place trail offset bytes here:" in lines[x]:
-                lines[x+2]= "unsigned char tail1[1] = { 0x33 };\n"
-                lines[x+3] = "unsigned char tail2[1] = { 0xf0 };\n"
+                lines[x+2]= "unsigned char tail1[1] = { 0xab };\n"
+                lines[x+3] = "unsigned char tail2[1] = { 0x97 };\n"
                
     with open(compile_file, 'w+') as f:
         f.writelines( lines )
@@ -182,6 +185,10 @@ def main(innocent_path, output, compile_file, url, length_key, supplied_key, ste
         print("Using supplied key {0} of length {1} bytes.".format(supplied_key, int(len(supplied_key)/4)))
         temp_key = supplied_key.replace('\\x', ' ')
         key_bytes = bytearray.fromhex(temp_key)
+
+        #write key to disk
+        with open('forblaze_key', 'wb') as f:
+            f.write(key_bytes)
         
         #print(key_bytes, len(key_bytes))
         print("Encrypting bytes...")
@@ -198,7 +205,7 @@ def main(innocent_path, output, compile_file, url, length_key, supplied_key, ste
         
         value = compile_forblaze(compile_file, compiled_binary_name)
         if value == True:
-            print("******Forblaze successful.  Check {0} for the stego file and {1} for the compiled binary!*******".format(output, compiled_binary_name))
+            print("******Forblaze successful.  Check {0} for the stego file, forblaze_key for your key file (only relevent if using Method 3), and {1} for the compiled binary!*******".format(output, compiled_binary_name))
 
 
     else:
@@ -221,13 +228,13 @@ def main(innocent_path, output, compile_file, url, length_key, supplied_key, ste
         
         value = compile_forblaze(compile_file, compiled_binary_name)
         if value == True:
-            print("******Forblaze successful.  Check {0} for the stego file and {1} for the compiled binary!*******".format(output, compiled_binary_name))
+            print("******Forblaze successful.  Check {0} for the stego file, forblaze_key for your key file (only relevent if using Method 3), and {1} for the compiled binary!*******".format(output, compiled_binary_name))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate stego for implants.")
     parser.add_argument('-innocent_path', action='store', dest="path", default="", help="Provide the full path to the innocent file to be used.")
     parser.add_argument('-o', action='store', dest="output", default="stego_file", help="Provide the path where you want your stego file to be placed.")
-    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 150 bytes.")
+    parser.add_argument('-len_key', action='store', dest="length_of_key", default=16, help="Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 50 bytes.")
     #parser.add_argument('-compile_file', action='store', dest="compile_file", default="compile_forblaze.m", help="Provide the path to the C++ file you want to edit.")
     parser.add_argument('-url_to_encrypt', action='store', dest="url", default="", help="Provide the URL you want to stick inside the compile file.")
     parser.add_argument('-supply_key', action='store', dest="supplied_key", default="", help="If you wish to use a specific key, provide it here. It must be in the format: -supply_key \"\\\\x6e\\\\x60\\\\x...\" - aka two double slashes are needed between each byte, or else it WILL NOT WORK.")
@@ -250,8 +257,8 @@ if __name__ == '__main__':
         sys.exit()
     
 
-    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 150:
-        print("You cannot supply a key length less than 10 or greater than 150 bytes.")
+    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 50:
+        print("You cannot supply a key length less than 10 or greater than 50 bytes.")
         parser.print_help()
         sys.exit()
 
