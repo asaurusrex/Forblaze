@@ -27,7 +27,7 @@ optional arguments:
   -o OUTPUT             Provide the path where you want your stego file to be placed.
 
   -len_key LENGTH_OF_KEY
-                        Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 50 bytes.
+                        Provide a positive integer that will be the length of the key in bytes. Default is 16. Must be between 10 and 150 bytes.
 
 
   -url_to_encrypt URL   Provide the URL you want to stick inside the compile file.
