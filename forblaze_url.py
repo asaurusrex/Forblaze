@@ -250,8 +250,8 @@ if __name__ == '__main__':
         sys.exit()
     
 
-    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 50:
-        print("You cannot supply a key length less than 10 or greater than 50 bytes.")
+    elif int(args.length_of_key) < 10 or int(args.length_of_key) > 150:
+        print("You cannot supply a key length less than 10 or greater than 150 bytes.")
         parser.print_help()
         sys.exit()
 
