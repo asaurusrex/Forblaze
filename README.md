@@ -4,6 +4,9 @@ Author: AsaurusRex
 ## Disclaimer
 DO NOT use this project for purposes other than legitimate red teaming/pentesting jobs, or research.  DO NOT use this for illegal activity of any kind, and know that this project is intended for research purposes and to help advance the missions of both red and blue teams.  
 
+## Blog Post
+For the blog post regarding Forblaze, check out https://medium.com/@marcusthebrody/forblaze-a-mac-stego-payload-generator-aaa7e7775571
+
 ## Purpose
 Forblaze is a project designed to provide steganography capabilities to Mac OS payloads.  Using python3, it will build an Obj-C file for you which will be compiled to pull desired encrypted URLs out of the stego file, fetch payloads over https, and execute them directly into memory.  It utilizes custom encryption - it is not cryptographically secure, but purely to thwart analysis by AV engines.  It is a slight deviation on my previously built custom encryption for Windows, called Rubicon, and is more simple in practice.  Forblaze utilizes header and footer bytes to identify where in the stego file your encrypted bytes are, and then decrypts them with a hard-coded key in compile_forblaze.m.  This key can be saved and re-used, with the effect that a different URL could be used to fetch a different payload, and the same compiled forblaze should still be able to execute and process it (provided the header and footer bytes aren't changed, and the new stego file is uploaded to the correct location.) 
 
