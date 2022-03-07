@@ -1,4 +1,4 @@
-# Forblaze - A Python Mac Steganography Payload Generator
+# Forblaze - A Python Mac Steganography Payload Generator/In-Memory Dylib/MachO Execution
 Author: AsaurusRex
 
 ## Disclaimer
@@ -46,7 +46,7 @@ optional arguments:
                         Give the name of the compiled binary to extract the URL and run code in memory from the stego file. The default is forblaze.
 
   -method METHOD        Select which method you wish to use. Method 1 relies on executing a dylib directly into memory, and works with Go payloads as well as regular payloads. Method 2
-                        relies on executing a macho file directly into memory, but does not work with Go compiled payloads. Method 3 is method 1 but relies on fetchting the decrypting key
+                        relies on executing a macho file directly into memory, but does not work with Go compiled payloads. Method 3 is method 1 but relies on fetching the decrypting key
                         over a server, which is more opsec friendly. The default method is 1. NOTE: You still might need to edit the 'module' (aka RunMain) manually depending on your
                         execution method!
 
